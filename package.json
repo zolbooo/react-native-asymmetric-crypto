@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "description": "Hardware-backed asymmetric cryptography library for React Native",
   "types": "lib/index.d.ts",
-  "react-native": "src/index",
-  "source": "src/index",
+  "react-native": "lib/index.js",
+  "source": "lib/index.js",
   "files": [
     "src",
     "android",
