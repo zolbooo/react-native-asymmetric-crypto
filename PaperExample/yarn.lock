@@ -1426,7 +1426,7 @@
   dependencies:
     "@types/react" "^17"
 
-"@types/react@*", "@types/react@^17", "@types/react@^18.0.14":
+"@types/react@*", "@types/react@^17":
   version "17.0.47"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-17.0.47.tgz#4ee71aaf4c5a9e290e03aa4d0d313c5d666b3b78"
   integrity sha512-mk0BL8zBinf2ozNr3qPnlu1oyVTYq+4V7WA76RgxUAtf0Em/Wbid38KN6n4abEkvO4xMTBWmnP1FtQzgkEiJoA==
@@ -5710,10 +5710,9 @@ react-is@^16.13.1:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
 
-"react-native-asymmetric-crypto@file:..":
+react-native-asymmetric-crypto@../library:
   version "0.0.1"
-  dependencies:
-    "@types/react" "^18.0.14"
+
 
 react-native-codegen@^0.0.17:
   version "0.0.17"
