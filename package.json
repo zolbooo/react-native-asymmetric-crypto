@@ -51,5 +51,12 @@
     "@types/react": "^18.0.14",
     "@types/react-native": "^0.67.8",
     "typescript": "^4.7.4"
+  },
+  "codegenConfig": {
+    "libraries": {
+      "name": "RNAsymmetricCryptoSpec",
+      "type": "modules",
+      "jsSrcsDir": "src"
+    }
   }
 }
