@@ -14,6 +14,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "outDir": "./lib",
+    "declaration": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noImplicitUseStrict": false,
