@@ -17,7 +17,8 @@
     "!**/__mocks__"
   ],
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
