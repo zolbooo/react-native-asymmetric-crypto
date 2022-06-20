@@ -13,6 +13,7 @@
     "lib": ["esnext"],
     "module": "esnext",
     "moduleResolution": "node",
+    "outDir": "./lib",
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noImplicitUseStrict": false,
@@ -23,5 +24,6 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext"
-  }
+  },
+  "exclude": ["PaperExample", "FabricExample"]
 }
