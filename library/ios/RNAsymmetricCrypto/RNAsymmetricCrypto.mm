@@ -1,6 +1,6 @@
 #import "RNAsymmetricCrypto.h"
 #ifdef RCT_NEW_ARCH_ENABLED
-#import "RNCalculatorSpec.h"
+#import "RNAsymmetricCryptoSpec.h"
 #endif
 
 @implementation RNAsymmetricCrypto
