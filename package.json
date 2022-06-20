@@ -1,0 +1,47 @@
+{
+  "name": "react-native-asymmetric-crypto",
+  "version": "0.0.1",
+  "description": "Hardware-backed asymmetric cryptography library for React Native",
+  "react-native": "src/index",
+  "source": "src/index",
+  "files": [
+    "src",
+    "android",
+    "ios",
+    "RNAsymmetricCrypto.podspec",
+    "!android/build",
+    "!ios/build",
+    "!**/__tests__",
+    "!**/__fixtures__",
+    "!**/__mocks__"
+  ],
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zolbooo/react-native-asymmetric-cryptography.git"
+  },
+  "keywords": [
+    "react-native",
+    "ios",
+    "android",
+    "cryptography",
+    "asymmetric-cryptography",
+    "ecdsa",
+    "ecc",
+    "elliptic",
+    "rsa",
+    "public-key-cryptography"
+  ],
+  "author": "Zolboobayar Gantumur <zolboobayar@metainc.mn> (https://github.com/zolbooo)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zolbooo/react-native-asymmetric-cryptography/issues"
+  },
+  "homepage": "https://github.com/zolbooo/react-native-asymmetric-cryptography#readme",
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  }
+}
