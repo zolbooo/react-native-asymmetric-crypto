@@ -11,6 +11,7 @@ export interface Spec extends TurboModule {
       }
     | { available: true; biometryType: BiometryType }
   >;
+  isHardwareSecuritySupported(): Promise<boolean>;
 
   keyExists(alias: string): Promise<{ exists: boolean; error?: string }>;
 }
