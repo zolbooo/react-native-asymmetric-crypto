@@ -11,6 +11,8 @@ export interface Spec extends TurboModule {
       }
     | { available: true; biometryType: BiometryType }
   >;
+
+  keyExists(alias: string): Promise<{ exists: boolean; error?: string }>;
 }
 
 export default TurboModuleRegistry.get<Spec>("RNAsymmetricCrypto");
