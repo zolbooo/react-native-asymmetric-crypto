@@ -1,6 +1,8 @@
 #import "RNAsymmetricCrypto.h"
+
 #import <LocalAuthentication/LocalAuthentication.h>
 #import <Security/Security.h>
+#import <CommonCrypto/CommonDigest.h>
 
 @implementation RNAsymmetricCrypto
 
@@ -194,6 +196,62 @@ RCT_EXPORT_METHOD(removeKey: (NSString *)alias
             NSString *message = [NSString stringWithFormat:@"SecItemDelete failed: %d", (int)status];
             reject(@"removeKey", message, nil);
         }
+    });
+}
+
+RCT_EXPORT_METHOD(sign:
+#ifdef RCT_NEW_ARCH_ENABLED
+    (JS::NativeRNAsymmetricCrypto::SpecSignOptions &)options
+#else
+    (NSDictionary *)options
+#endif
+    resolve:(RCTPromiseResolveBlock)resolve
+    reject:(RCTPromiseRejectBlock)reject) {
+#ifdef RCT_NEW_ARCH_ENABLED
+    NSString *alias = options.alias();
+    NSString *dataBase64 = options.dataBase64();
+#else
+    NSString *alias = options[@"alias"];
+    NSString *dataBase64 = options[@"dataBase64"];
+#endif
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSDictionary *query = @{
+            (id)kSecClass: (id)kSecClassKey,
+            (id)kSecAttrApplicationTag: alias,
+            (id)kSecAttrKeyType: (id)kSecAttrKeyTypeECSECPrimeRandom,
+            (id)kSecReturnRef: @YES,
+            (id)kSecUseOperationPrompt: @""
+        };
+        SecKeyRef privateKey;
+        OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&privateKey);
+        if (!privateKey) {
+            NSString *message = [NSString stringWithFormat:@"SecItemCopyMatching: %d", (int)status];
+            reject(@"sign", message, nil);
+            return;
+        }
+
+        NSData *payload = [[NSData alloc] initWithBase64EncodedString:dataBase64 options:0];
+        if (payload == nil) {
+            reject(@"sign", @"Invalid base64", nil);
+            return;
+        }
+        NSMutableData *dataDigest = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
+        CC_SHA256(payload.bytes, payload.length, (unsigned char *)dataDigest.mutableBytes);
+
+        CFErrorRef errorRef = NULL;
+        NSData *signature = CFBridgingRelease(SecKeyCreateSignature(privateKey, kSecKeyAlgorithmECDSASignatureDigestX962SHA256, (CFDataRef)dataDigest, &errorRef));
+        if (signature == nil) {
+            NSError *error = (__bridge NSError *)errorRef;
+            if (error.code == errSecUserCanceled) {
+                reject(@"sign", @"User cancelled request", nil);
+                return;
+            }
+            NSString *message = [NSString stringWithFormat:@"SecKeyCreateSignature failed: %@", error];
+            reject(@"sign", message, nil);
+            return;
+        }
+
+        resolve([signature base64EncodedStringWithOptions:0]);
     });
 }
 
