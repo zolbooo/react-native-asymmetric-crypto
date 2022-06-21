@@ -19,6 +19,8 @@ export interface Spec extends TurboModule {
     securityLevel: string;
   }): Promise<{ publicKey: string }>;
   removeKey(alias: string): Promise<boolean>;
+
+  sign(options: { alias: string; dataBase64: string }): Promise<string>;
 }
 
 export default TurboModuleRegistry.get<Spec>("RNAsymmetricCrypto");
