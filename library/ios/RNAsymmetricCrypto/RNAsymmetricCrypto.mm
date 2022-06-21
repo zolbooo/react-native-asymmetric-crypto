@@ -51,19 +51,27 @@ RCT_EXPORT_METHOD(isHardwareSecuritySupported: (RCTPromiseResolveBlock)resolve
     resolve(@(YES));
 }
 
+- (bool)keyExists: (NSString *)alias :(OSStatus *)status {
+    NSDictionary *searchQuery = @{
+        (id)kSecClass: (id)kSecClassKey,
+        (id)kSecAttrApplicationTag: alias,
+        (id)kSecAttrKeyType: (id)kSecAttrKeyTypeECSECPrimeRandom,
+        (id)kSecUseAuthenticationUI: (id)kSecUseAuthenticationUIFail
+    };
+
+    *status = SecItemCopyMatching((__bridge CFDictionaryRef)searchQuery, nil);
+    if (*status == errSecSuccess || *status == errSecInteractionNotAllowed) {
+        return YES;
+    }
+    return NO;
+}
+
 RCT_EXPORT_METHOD(keyExists: (NSString *)alias
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject) {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSDictionary *searchQuery = @{
-            (id)kSecClass: (id)kSecClassKey,
-            (id)kSecAttrApplicationTag: alias,
-            (id)kSecAttrKeyType: (id)kSecAttrKeyTypeECSECPrimeRandom,
-            (id)kSecUseAuthenticationUI: (id)kSecUseAuthenticationUIFail
-        };
-
-        OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)searchQuery, nil);
-        if (status == errSecSuccess || status == errSecInteractionNotAllowed) {
+        OSStatus status;
+        if ([self keyExists:alias :&status]) {
             NSDictionary *result = @{
                 @"exists": @(YES),
             };
