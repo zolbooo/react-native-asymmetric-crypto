@@ -20,7 +20,11 @@ export interface Spec extends TurboModule {
   }): Promise<{ publicKey: string }>;
   removeKey(alias: string): Promise<boolean>;
 
-  sign(options: { alias: string; dataBase64: string }): Promise<string>;
+  sign(options: {
+    alias: string;
+    dataBase64: string;
+    prompt?: string;
+  }): Promise<string>;
 }
 
 export default TurboModuleRegistry.get<Spec>("RNAsymmetricCrypto");

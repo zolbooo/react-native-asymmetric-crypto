@@ -210,17 +210,23 @@ RCT_EXPORT_METHOD(sign:
 #ifdef RCT_NEW_ARCH_ENABLED
     NSString *alias = options.alias();
     NSString *dataBase64 = options.dataBase64();
+    NSString *prompt = options.prompt();
 #else
     NSString *alias = options[@"alias"];
     NSString *dataBase64 = options[@"dataBase64"];
+    NSString *prompt = options[@"prompt"];
 #endif
+    if (prompt == nil) {
+        prompt = @"";
+    }
+
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSDictionary *query = @{
             (id)kSecClass: (id)kSecClassKey,
             (id)kSecAttrApplicationTag: alias,
             (id)kSecAttrKeyType: (id)kSecAttrKeyTypeECSECPrimeRandom,
             (id)kSecReturnRef: @YES,
-            (id)kSecUseOperationPrompt: @""
+            (id)kSecUseOperationPrompt: prompt,
         };
         SecKeyRef privateKey;
         OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&privateKey);
