@@ -42,6 +42,15 @@ RCT_EXPORT_METHOD(getAvailableBiometryType: (RCTPromiseResolveBlock)resolve
     });
 }
 
+RCT_EXPORT_METHOD(isHardwareSecuritySupported: (RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject) {
+    // Secure Enclave is shipped in Apple A7 processors/iPhone 5s
+    // We target iOS 11+, iPhone 5/5c support only iOS 10.3.3,
+    // so that we can be sure that all devices running this code support
+    // hardware-backed cryptographic keys
+    resolve(@(YES));
+}
+
 RCT_EXPORT_METHOD(keyExists: (NSString *)alias
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject) {
