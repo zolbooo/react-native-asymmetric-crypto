@@ -2,7 +2,24 @@ import type { Spec as RNAsymmetricCryptoModule } from "./NativeRNAsymmetricCrypt
 
 const isTurboModuleEnabled = (global as any).__turboModuleProxy != null;
 
-const RNAsymmetricCrypto: RNAsymmetricCryptoModule = isTurboModuleEnabled
+export enum KeySecurityLevel {
+  NONE = "none",
+  PASSWORD = "password",
+  BIOMETRICS = "biometrics",
+}
+
+const RNAsymmetricCrypto: Omit<RNAsymmetricCryptoModule, "createKey"> & {
+  createKey(options: {
+    alias: string;
+    securityLevel: KeySecurityLevel;
+  }): Promise<
+    | { success: true }
+    | {
+        success: false;
+        error?: string;
+      }
+  >;
+} = isTurboModuleEnabled
   ? require("./NativeRNAsymmetricCrypto").default
   : require("./RNAsymmetricCrypto").default;
 
