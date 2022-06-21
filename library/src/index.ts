@@ -1,7 +1,11 @@
-import type { Spec as RNAsymmetricCryptoModule } from "./NativeRNAsymmetricCrypto";
+import type {
+  BiometryType,
+  Spec as RNAsymmetricCryptoModule,
+} from "./NativeRNAsymmetricCrypto";
 
 const isTurboModuleEnabled = (global as any).__turboModuleProxy != null;
 
+export type { BiometryType };
 export enum KeySecurityLevel {
   NONE = "none",
   PASSWORD = "password",
