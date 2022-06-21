@@ -87,6 +87,89 @@ RCT_EXPORT_METHOD(keyExists: (NSString *)alias
     });
 }
 
+static const size_t secp256r1HeaderLength = 26;
+static const unsigned char secp256r1Header[secp256r1HeaderLength] = {0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x02, 0x01, 0x06, 0x08, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x03, 0x01, 0x07, 0x03, 0x42, 0x00};
+
+RCT_EXPORT_METHOD(createKey:
+#ifdef RCT_NEW_ARCH_ENABLED
+                  (JS::NativeRNAsymmetricCrypto::SpecCreateKeyOptions &)options
+#else
+                  (NSDictionary *)options
+#endif
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject) {
+// NOTE: Get options before async call to prevent use-after-free
+#ifdef RCT_NEW_ARCH_ENABLED
+    NSString *alias = options.alias();
+    NSString *securityLevel = options.securityLevel();
+#else
+    NSString *alias = options[@"alias"];
+    NSString *securityLevel = options[@"securityLevel"];
+#endif
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        SecAccessControlCreateFlags flags;
+
+        if ([securityLevel isEqual: @"none"]) {
+            flags = kSecAccessControlPrivateKeyUsage;
+        } else if ([securityLevel isEqual: @"password"]) {
+            flags = kSecAccessControlPrivateKeyUsage | kSecAccessControlDevicePasscode;
+        } else if ([securityLevel isEqual: @"biometrics"]) {
+            if (@available (iOS 11.3, *)) {
+                flags = kSecAccessControlPrivateKeyUsage | kSecAccessControlBiometryCurrentSet;
+            } else {
+                flags = kSecAccessControlPrivateKeyUsage | kSecAccessControlTouchIDCurrentSet;
+            }
+        } else {
+            NSString *message = [NSString stringWithFormat:@"createKey: unknown securityLevel value %@", securityLevel];
+            reject(@"createKey", message, nil);
+            return;
+        }
+
+        CFErrorRef error = NULL;
+        SecAccessControlRef access = SecAccessControlCreateWithFlags(kCFAllocatorDefault,
+                                        kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
+                                        flags,
+                                        &error);
+        if (access == NULL || error != NULL) {
+            NSString *errorString = [NSString stringWithFormat:@"SecAccessControlCreateWithFlags failed: %@", error];
+            reject(@"createKey", errorString, nil);
+            return;
+        }
+
+        NSDictionary* attributes = @{
+            (id)kSecAttrKeyType:             (id)kSecAttrKeyTypeECSECPrimeRandom,
+            (id)kSecAttrKeySizeInBits:       @256,
+            (id)kSecAttrTokenID:             (id)kSecAttrTokenIDSecureEnclave,
+            (id)kSecPrivateKeyAttrs: @{
+                (id)kSecAttrIsPermanent:    @YES,
+                (id)kSecAttrApplicationTag: alias,
+                (id)kSecAttrAccessControl:  (__bridge id)access,
+            },
+        };
+        SecKeyRef privateKey = SecKeyCreateRandomKey((__bridge CFDictionaryRef)attributes, &error);
+        CFRelease(access);
+        if (!privateKey) {
+            NSString *message = [NSString stringWithFormat:@"SecKeyCreateRandomKey failed: %@", error];
+            reject(@"storage_error", message, nil);
+            return;
+        }
+
+        id publicKey = CFBridgingRelease(SecKeyCopyPublicKey(privateKey));
+        CFRelease(privateKey);
+
+        CFDataRef publicKeyDataRef = SecKeyCopyExternalRepresentation((SecKeyRef)publicKey, nil);
+        NSData *publicKeyData = (__bridge NSData *)publicKeyDataRef;
+
+        NSMutableData *publicKeyDER = [[NSMutableData alloc] init];
+        [publicKeyDER appendBytes:secp256r1Header length:secp256r1HeaderLength];
+        [publicKeyDER appendData:publicKeyData];
+        NSString *encodedPublicKey = [publicKeyDER base64EncodedStringWithOptions:0];
+        resolve(@{
+            @"publicKey": encodedPublicKey,
+        });
+    });
+}
+
 #ifdef RCT_NEW_ARCH_ENABLED
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
     (const facebook::react::ObjCTurboModule::InitParams &)params
