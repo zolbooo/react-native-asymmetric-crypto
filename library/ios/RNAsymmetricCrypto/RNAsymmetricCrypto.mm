@@ -178,6 +178,25 @@ RCT_EXPORT_METHOD(createKey:
     });
 }
 
+RCT_EXPORT_METHOD(removeKey: (NSString *)alias
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject) {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSDictionary *deleteQuery = @{
+            (id)kSecClass: (id)kSecClassKey,
+            (id)kSecAttrApplicationTag: alias,
+            (id)kSecAttrKeyType: (id)kSecAttrKeyTypeECSECPrimeRandom
+        };
+        OSStatus status = SecItemDelete((__bridge CFDictionaryRef)deleteQuery);
+        if (status == errSecSuccess) {
+            resolve(@YES);
+        } else {
+            NSString *message = [NSString stringWithFormat:@"SecItemDelete failed: %d", (int)status];
+            reject(@"removeKey", message, nil);
+        }
+    });
+}
+
 #ifdef RCT_NEW_ARCH_ENABLED
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
     (const facebook::react::ObjCTurboModule::InitParams &)params
