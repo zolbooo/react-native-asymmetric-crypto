@@ -14,13 +14,10 @@ export interface Spec extends TurboModule {
   isHardwareSecuritySupported(): Promise<boolean>;
 
   keyExists(alias: string): Promise<{ exists: boolean; error?: string }>;
-  createKey(options: { alias: string; securityLevel: string }): Promise<
-    | { success: true }
-    | {
-        success: false;
-        error?: string;
-      }
-  >;
+  createKey(options: {
+    alias: string;
+    securityLevel: string;
+  }): Promise<{ publicKey: string }>;
 }
 
 export default TurboModuleRegistry.get<Spec>("RNAsymmetricCrypto");

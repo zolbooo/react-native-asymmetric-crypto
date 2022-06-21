@@ -16,13 +16,7 @@ const RNAsymmetricCrypto: Omit<RNAsymmetricCryptoModule, "createKey"> & {
   createKey(options: {
     alias: string;
     securityLevel: KeySecurityLevel;
-  }): Promise<
-    | { success: true }
-    | {
-        success: false;
-        error?: string;
-      }
-  >;
+  }): Promise<{ publicKey: string }>;
 } = isTurboModuleEnabled
   ? require("./NativeRNAsymmetricCrypto").default
   : require("./RNAsymmetricCrypto").default;
