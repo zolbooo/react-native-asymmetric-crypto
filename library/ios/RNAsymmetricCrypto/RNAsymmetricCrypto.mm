@@ -42,6 +42,42 @@ RCT_EXPORT_METHOD(getAvailableBiometryType: (RCTPromiseResolveBlock)resolve
     });
 }
 
+RCT_EXPORT_METHOD(keyExists: (NSString *)alias
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject) {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSDictionary *searchQuery = @{
+            (id)kSecClass: (id)kSecClassKey,
+            (id)kSecAttrApplicationTag: alias,
+            (id)kSecAttrKeyType: (id)kSecAttrKeyTypeECSECPrimeRandom,
+            (id)kSecUseAuthenticationUI: (id)kSecUseAuthenticationUIFail
+        };
+
+        OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)searchQuery, nil);
+        if (status == errSecSuccess || status == errSecInteractionNotAllowed) {
+            NSDictionary *result = @{
+                @"exists": @(YES),
+            };
+            resolve(result);
+            return;
+        }
+        if (status == errSecItemNotFound) {
+            NSDictionary *result = @{
+                @"exists": @(NO),
+            };
+            resolve(result);
+            return;
+        }
+
+        NSString *message = [NSString stringWithFormat:@"SecItemCopyMatching failed: %ld", (long)status];
+        NSDictionary *result = @{
+            @"exists": @(NO),
+            @"error": message,
+        };
+        resolve(result);
+    });
+}
+
 #ifdef RCT_NEW_ARCH_ENABLED
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
     (const facebook::react::ObjCTurboModule::InitParams &)params
