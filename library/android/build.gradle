@@ -1,0 +1,119 @@
+import java.nio.file.Paths
+
+buildscript {
+    ext.safeExtGet = { prop, fallback ->
+        rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        if (project == rootProject) {
+            classpath('com.android.tools.build:gradle:7.2.1')
+        }
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${safeExtGet('kotlinVersion', '1.7.0')}")
+    }
+}
+
+static def findNodeModules(baseDir) {
+    def basePath = baseDir.toPath().normalize()
+    // Node's module resolution algorithm searches up to the root directory,
+    // after which the base path will be null
+    while (basePath) {
+        def nodeModulesPath = Paths.get(basePath.toString(), 'node_modules')
+        def reactNativePath = Paths.get(nodeModulesPath.toString(), 'react-native')
+        if (nodeModulesPath.toFile().exists() && reactNativePath.toFile().exists()) {
+            return nodeModulesPath.toString()
+        }
+        basePath = basePath.getParent()
+    }
+    throw new GradleException('Unable to locate node_modules')
+}
+
+def isNewArchitectureEnabled() {
+    return project.hasProperty('newArchEnabled') && project.newArchEnabled == 'true'
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+if (isNewArchitectureEnabled()) {
+    apply plugin: 'com.facebook.react'
+}
+
+def safeExtGet(prop, fallback) {
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
+
+def nodeModules = findNodeModules(projectDir)
+
+android {
+    compileSdkVersion safeExtGet('compileSdkVersion', 30)
+    buildToolsVersion safeExtGet('buildToolsVersion', '30.0.2')
+
+    defaultConfig {
+        minSdkVersion safeExtGet('minSdkVersion', 18)
+        targetSdkVersion safeExtGet('targetSdkVersion', 30)
+        buildConfigField 'boolean', 'IS_NEW_ARCHITECTURE_ENABLED', isNewArchitectureEnabled().toString()
+
+        if (isNewArchitectureEnabled()) {
+            var appProject = rootProject.allprojects.find { it.plugins.hasPlugin('com.android.application') }
+            externalNativeBuild {
+                ndkBuild {
+                    arguments 'APP_PLATFORM=android-21',
+                            'APP_STL=c++_shared',
+                            'NDK_TOOLCHAIN_VERSION=clang',
+                            "GENERATED_SRC_DIR=${appProject.buildDir}/generated/source",
+                            "PROJECT_BUILD_DIR=${appProject.buildDir}",
+                            "REACT_ANDROID_DIR=${nodeModules}/react-native/ReactAndroid",
+                            "REACT_ANDROID_BUILD_DIR=${nodeModules}/react-native/ReactAndroid/build"
+                    cFlags '-Wall', '-Werror', '-fexceptions', '-frtti', '-DWITH_INSPECTOR=1'
+                    cppFlags '-std=c++17'
+                    targets 'asymmetriccrypto_modules'
+                }
+            }
+        }
+    }
+
+    sourceSets {
+        main {
+            if (isNewArchitectureEnabled()) {
+                java.srcDirs += ['src/fabric/kotlin', 'build/generated/source/codegen/java']
+            } else {
+                java.srcDirs += ['src/paper/kotlin']
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+repositories {
+    if (project == rootProject) {
+        maven {
+            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+            url "$rootDir/../node_modules/react-native/android"
+        }
+        mavenCentral()
+        google()
+    }
+}
+
+dependencies {
+    //noinspection GradleDynamicVersion
+    implementation 'com.facebook.react:react-native:+'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+}
+
+if (isNewArchitectureEnabled()) {
+    react {
+        jsRootDir = file('../src/')
+        libraryName = 'asymmetriccrypto'
+        codegenJavaPackageName = 'com.github.zolbooo.asymmetriccrypto'
+        reactNativeDir = rootProject.file('../node_modules/react-native/')
+        codegenDir = rootProject.file('../node_modules/react-native-codegen/')
+    }
+}
