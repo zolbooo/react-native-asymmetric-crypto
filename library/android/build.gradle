@@ -106,6 +106,7 @@ dependencies {
     //noinspection GradleDynamicVersion
     implementation 'com.facebook.react:react-native:+'
     implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation "androidx.core:core-ktx:1.8.0"
 
     implementation 'org.bouncycastle:bcprov-jdk18on:1.71'
     implementation "androidx.biometric:biometric:1.1.0"
