@@ -12,10 +12,6 @@ class AsymmetricCryptoModule(reactContext: ReactApplicationContext?) :
         TODO("Not yet implemented")
     }
 
-    override fun isHardwareSecuritySupported(promise: Promise?) {
-        TODO("Not yet implemented")
-    }
-
     override fun keyExists(alias: String?, promise: Promise?) {
         TODO("Not yet implemented")
     }

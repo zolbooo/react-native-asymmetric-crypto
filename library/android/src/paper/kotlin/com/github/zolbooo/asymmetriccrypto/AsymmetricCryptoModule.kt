@@ -8,13 +8,16 @@ class AsymmetricCryptoModule : ReactContextBaseJavaModule() {
     }
 
     @ReactMethod
-    fun isHardwareSecuritySupported(promise: Promise) {
-        TODO("Not yet implemented")
-    }
-
-    @ReactMethod
     fun getAvailableBiometryType(promise: Promise) {
-        TODO("Not yet implemented")
+        promise.resolve(
+            Arguments.createMap().apply {
+                putBoolean(
+                    "available",
+                    Biometrics.isBiometryAvailable(reactApplicationContext),
+                )
+                putString("biometryType", "Generic")
+            }
+        )
     }
 
     @ReactMethod
