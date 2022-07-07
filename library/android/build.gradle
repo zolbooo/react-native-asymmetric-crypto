@@ -107,6 +107,7 @@ dependencies {
     implementation 'com.facebook.react:react-native:+'
     implementation 'androidx.appcompat:appcompat:1.4.2'
 
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.71'
     implementation "androidx.biometric:biometric:1.1.0"
     implementation "androidx.security:security-crypto:1.0.0"
 }
