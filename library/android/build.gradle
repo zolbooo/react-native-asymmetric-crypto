@@ -48,7 +48,7 @@ def safeExtGet(prop, fallback) {
 def nodeModules = findNodeModules(projectDir)
 
 android {
-    compileSdkVersion safeExtGet('compileSdkVersion', 30)
+    compileSdkVersion safeExtGet('compileSdkVersion', 32)
     buildToolsVersion safeExtGet('buildToolsVersion', '30.0.2')
 
     testOptions {
